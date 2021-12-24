@@ -1,6 +1,7 @@
+using Mirror;
 using UnityEngine;
 
-namespace Mirror.Examples.NetworkRoom
+namespace CTF
 {
     [RequireComponent(typeof(CapsuleCollider))]
     [RequireComponent(typeof(CharacterController))]
@@ -9,6 +10,15 @@ namespace Mirror.Examples.NetworkRoom
     public class PlayerController : NetworkBehaviour
     {
         public CharacterController characterController;
+        public GameObject Bullet;
+        public Transform BulletFirePosition;
+
+        private const KeyCode LEFT_TURN = KeyCode.A;
+        private const KeyCode RIGHT_TURN = KeyCode.D;
+        private const float BulletSpeed = 15.0f;
+        private const float Cooldown = 1.0f;
+        private float CooldownTime;
+        private float BulletLife = 1.0f;
 
         void OnValidate()
         {
@@ -24,7 +34,7 @@ namespace Mirror.Examples.NetworkRoom
         {
             Camera.main.orthographic = false;
             Camera.main.transform.SetParent(transform);
-            Camera.main.transform.localPosition = new Vector3(0f, 3f, -8f);
+            Camera.main.transform.localPosition = new Vector3(0f, 3f, -3f);
             Camera.main.transform.localEulerAngles = new Vector3(10f, 0f, 0f);
 
             characterController.enabled = true;
@@ -51,8 +61,8 @@ namespace Mirror.Examples.NetworkRoom
         public float vertical;
         public float turn;
         public float jumpSpeed;
-        public bool isGrounded = true;
-        public bool isFalling;
+        //public bool isGrounded = true;
+        //public bool isFalling;
         public Vector3 velocity;
 
         void Update()
@@ -60,31 +70,42 @@ namespace Mirror.Examples.NetworkRoom
             if (!isLocalPlayer || characterController == null || !characterController.enabled)
                 return;
 
+            if (Input.GetKey(KeyCode.Space))
+            {
+                if (Time.time > CooldownTime)
+                {
+                    CooldownTime = Time.time + Cooldown;
+                    CmdShootRay();
+                }
+            }
+
             horizontal = Input.GetAxis("Horizontal");
             vertical = Input.GetAxis("Vertical");
 
-            // Q and E cancel each other out, reducing the turn to zero
-            if (Input.GetKey(KeyCode.Q))
+            // left and right cancel each other out, reducing the turn to zero
+            if (Input.GetKey(LEFT_TURN))
                 turn = Mathf.MoveTowards(turn, -maxTurnSpeed, turnSensitivity);
-            if (Input.GetKey(KeyCode.E))
+            if (Input.GetKey(RIGHT_TURN))
                 turn = Mathf.MoveTowards(turn, maxTurnSpeed, turnSensitivity);
-            if (Input.GetKey(KeyCode.Q) && Input.GetKey(KeyCode.E))
+            if (Input.GetKey(LEFT_TURN) && Input.GetKey(RIGHT_TURN))
                 turn = Mathf.MoveTowards(turn, 0, turnSensitivity);
-            if (!Input.GetKey(KeyCode.Q) && !Input.GetKey(KeyCode.E))
+            if (!Input.GetKey(LEFT_TURN) && !Input.GetKey(RIGHT_TURN))
                 turn = Mathf.MoveTowards(turn, 0, turnSensitivity);
 
-            if (isGrounded)
-                isFalling = false;
+            //if (isGrounded)
+            //    isFalling = false;
 
-            if ((isGrounded || !isFalling) && jumpSpeed < 1f && Input.GetKey(KeyCode.Space))
-            {
-                jumpSpeed = Mathf.Lerp(jumpSpeed, 1f, 0.5f);
-            }
-            else if (!isGrounded)
-            {
-                isFalling = true;
-                jumpSpeed = 0;
-            }
+            //if ((isGrounded || !isFalling) && jumpSpeed < 1f && Input.GetKey(KeyCode.Space))
+            //{
+            //    jumpSpeed = Mathf.Lerp(jumpSpeed, 1f, 0.5f);
+            //}
+            //else if (!isGrounded)
+            //{
+            //    isFalling = true;
+            //    jumpSpeed = 0;
+            //}
+
+
         }
 
         void FixedUpdate()
@@ -104,8 +125,23 @@ namespace Mirror.Examples.NetworkRoom
             else
                 characterController.SimpleMove(direction);
 
-            isGrounded = characterController.isGrounded;
+            //isGrounded = characterController.isGrounded;
             velocity = characterController.velocity;
+        }
+
+        [Command]
+        void CmdShootRay()
+        {
+            RpcFireWeapon();
+        }
+
+        [ClientRpc]
+        void RpcFireWeapon()
+        {
+            //bulletAudio.Play(); muzzleflash  etc
+            GameObject bullet = Instantiate(Bullet, BulletFirePosition.position, BulletFirePosition.rotation);
+            bullet.GetComponent<Rigidbody>().velocity = bullet.transform.forward * BulletSpeed;
+            Destroy(bullet, BulletLife);
         }
     }
 }

@@ -1,7 +1,8 @@
-﻿using UnityEngine;
+﻿using Mirror;
+using UnityEngine;
 
-namespace Mirror.Examples.Tanks
-{
+namespace CTF
+{ 
     public class Projectile : NetworkBehaviour
     {
         public float destroyAfter = 5;

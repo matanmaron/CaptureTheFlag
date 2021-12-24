@@ -1,6 +1,7 @@
+using Mirror;
 using UnityEngine;
 
-namespace Mirror.Examples.NetworkRoom
+namespace CTF
 {
     public class RandomColor : NetworkBehaviour
     {

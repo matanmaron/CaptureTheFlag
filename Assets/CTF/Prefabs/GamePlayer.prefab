@@ -28,7 +28,8 @@ Transform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.39999998, z: 0.5}
   m_LocalScale: {x: 0.5, y: 0.1, z: 0.2}
-  m_Children: []
+  m_Children:
+  - {fileID: 6674445483320076887}
   m_Father: {fileID: 3138541494209382947}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -55,6 +56,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
@@ -79,6 +81,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &1480027675339556
 GameObject:
   m_ObjectHideFlags: 0
@@ -227,6 +230,8 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   characterController: {fileID: 143011667059871024}
+  Bullet: {fileID: 5890560936853567077, guid: 8ac9bb547a59b1145be0c24a1649d57f, type: 3}
+  BulletFirePosition: {fileID: 6674445483320076887}
   moveSpeed: 8
   turnSensitivity: 5
   maxTurnSpeed: 150
@@ -234,8 +239,6 @@ MonoBehaviour:
   vertical: 0
   turn: 6.57
   jumpSpeed: 0
-  isGrounded: 1
-  isFalling: 0
   velocity: {x: 0, y: 0, z: 0}
 --- !u!114 &6261579163786439309
 MonoBehaviour:
@@ -270,6 +273,36 @@ MonoBehaviour:
   syncInterval: 0
   index: 0
   score: 0
+--- !u!1 &1378848110174639525
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6674445483320076887}
+  m_Layer: 0
+  m_Name: BulletPosition
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6674445483320076887
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1378848110174639525}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 1.386}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 4216737524944602}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4926068573968176962
 GameObject:
   m_ObjectHideFlags: 0
@@ -326,6 +359,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -350,3 +384,4 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
