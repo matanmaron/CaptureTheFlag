@@ -15,12 +15,27 @@ namespace CTF
         public Team team = Team.None;
         private const KeyCode LEFT_TURN = KeyCode.A;
         private const KeyCode RIGHT_TURN = KeyCode.D;
-        private const float BulletSpeed = 15.0f;
-        private const float Cooldown = 1.0f;
+        private const float BULLET_SPEED = 100.0f;
+        private const float COOLDOWN = 0.3f;
         private float CooldownTime;
-        private float BulletLife = 1.0f;
         [SyncVar(hook = nameof(SetColor))] public Color32 color = Color.black;
         Material cachedMaterial;
+
+
+        [Header("Movement Settings")]
+        public float moveSpeed = 8f;
+        public float turnSensitivity = 5f;
+        public float maxTurnSpeed = 150f;
+
+        [Header("Diagnostics")]
+        public float horizontal;
+        public float vertical;
+        public float jumpSpeed;
+        public Vector3 velocity;
+
+        float lookSpeed = 3;
+        Vector2 rotation = Vector2.zero;
+        bool menu = false;
 
         void OnValidate()
         {
@@ -36,10 +51,20 @@ namespace CTF
         {
             Camera.main.orthographic = false;
             Camera.main.transform.SetParent(transform);
-            Camera.main.transform.localPosition = new Vector3(0f, 3f, -3f);
-            Camera.main.transform.localEulerAngles = new Vector3(10f, 0f, 0f);
+            Camera.main.transform.localPosition = new Vector3(0f, 3f, 0);
 
             characterController.enabled = true;
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+        }
+
+        void Look()
+        {
+            rotation.y += Input.GetAxis("Mouse X");
+            rotation.x += -Input.GetAxis("Mouse Y");
+            rotation.x = Mathf.Clamp(rotation.x, -15f, 15f);
+            transform.eulerAngles = new Vector2(0, rotation.y) * lookSpeed;
+            Camera.main.transform.localRotation = Quaternion.Euler(rotation.x * lookSpeed, 0, 0);
         }
 
         void OnDisable()
@@ -53,30 +78,31 @@ namespace CTF
             }
         }
 
-        [Header("Movement Settings")]
-        public float moveSpeed = 8f;
-        public float turnSensitivity = 5f;
-        public float maxTurnSpeed = 150f;
-
-        [Header("Diagnostics")]
-        public float horizontal;
-        public float vertical;
-        public float turn;
-        public float jumpSpeed;
-        //public bool isGrounded = true;
-        //public bool isFalling;
-        public Vector3 velocity;
-
         void Update()
         {
             if (!isLocalPlayer || characterController == null || !characterController.enabled)
                 return;
 
-            if (Input.GetKey(KeyCode.Space))
+            if (Input.GetButton("Cancel"))
+            {
+                menu = !menu;
+                if (menu)
+                {
+                    Cursor.visible = true;
+                    Cursor.lockState = CursorLockMode.None;
+                }
+                else
+                {
+                    Cursor.visible = false;
+                    Cursor.lockState = CursorLockMode.Locked;
+                }
+            }
+
+            if (Input.GetButton("Fire1"))
             {
                 if (Time.time > CooldownTime)
                 {
-                    CooldownTime = Time.time + Cooldown;
+                    CooldownTime = Time.time + COOLDOWN;
                     CmdShootRay();
                 }
             }
@@ -84,38 +110,13 @@ namespace CTF
             horizontal = Input.GetAxis("Horizontal");
             vertical = Input.GetAxis("Vertical");
 
-            // left and right cancel each other out, reducing the turn to zero
-            if (Input.GetKey(LEFT_TURN))
-                turn = Mathf.MoveTowards(turn, -maxTurnSpeed, turnSensitivity);
-            if (Input.GetKey(RIGHT_TURN))
-                turn = Mathf.MoveTowards(turn, maxTurnSpeed, turnSensitivity);
-            if (Input.GetKey(LEFT_TURN) && Input.GetKey(RIGHT_TURN))
-                turn = Mathf.MoveTowards(turn, 0, turnSensitivity);
-            if (!Input.GetKey(LEFT_TURN) && !Input.GetKey(RIGHT_TURN))
-                turn = Mathf.MoveTowards(turn, 0, turnSensitivity);
-
-            //if (isGrounded)
-            //    isFalling = false;
-
-            //if ((isGrounded || !isFalling) && jumpSpeed < 1f && Input.GetKey(KeyCode.Space))
-            //{
-            //    jumpSpeed = Mathf.Lerp(jumpSpeed, 1f, 0.5f);
-            //}
-            //else if (!isGrounded)
-            //{
-            //    isFalling = true;
-            //    jumpSpeed = 0;
-            //}
-
-
+            Look();
         }
 
         void FixedUpdate()
         {
             if (!isLocalPlayer || characterController == null || !characterController.enabled)
                 return;
-
-            transform.Rotate(0f, turn * Time.fixedDeltaTime, 0f);
 
             Vector3 direction = new Vector3(horizontal, jumpSpeed, vertical);
             direction = Vector3.ClampMagnitude(direction, 1f);
@@ -141,9 +142,15 @@ namespace CTF
         void RpcFireWeapon()
         {
             //bulletAudio.Play(); muzzleflash  etc
+            Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5F, 0.5F, 0));
+            RaycastHit hit;
+            Vector3 targetPoint;
+            if (Physics.Raycast(ray, out hit))
+                targetPoint = hit.point;
+            else
+                targetPoint = ray.GetPoint(1000); // You may need to change this value according to your needs
             GameObject bullet = Instantiate(Bullet, BulletFirePosition.position, BulletFirePosition.rotation);
-            bullet.GetComponent<Rigidbody>().velocity = bullet.transform.forward * BulletSpeed;
-            Destroy(bullet, BulletLife);
+            bullet.GetComponent<Rigidbody>().velocity = (targetPoint - bullet.transform.position).normalized * BULLET_SPEED;
         }
 
         [ServerCallback]

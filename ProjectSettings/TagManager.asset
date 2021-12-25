@@ -6,6 +6,7 @@ TagManager:
   tags:
   - RedFlag
   - BlueFlag
+  - Bullet
   layers:
   - Default
   - TransparentFX
@@ -13,8 +14,8 @@ TagManager:
   - 
   - Water
   - UI
-  - 
-  - 
+  - Flag
+  - Bullet
   - 
   - 
   - 
