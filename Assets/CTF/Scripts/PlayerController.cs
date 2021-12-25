@@ -12,13 +12,15 @@ namespace CTF
         public CharacterController characterController;
         public GameObject Bullet;
         public Transform BulletFirePosition;
-
+        public Team team = Team.None;
         private const KeyCode LEFT_TURN = KeyCode.A;
         private const KeyCode RIGHT_TURN = KeyCode.D;
         private const float BulletSpeed = 15.0f;
         private const float Cooldown = 1.0f;
         private float CooldownTime;
         private float BulletLife = 1.0f;
+        [SyncVar(hook = nameof(SetColor))] public Color32 color = Color.black;
+        Material cachedMaterial;
 
         void OnValidate()
         {
@@ -142,6 +144,50 @@ namespace CTF
             GameObject bullet = Instantiate(Bullet, BulletFirePosition.position, BulletFirePosition.rotation);
             bullet.GetComponent<Rigidbody>().velocity = bullet.transform.forward * BulletSpeed;
             Destroy(bullet, BulletLife);
+        }
+
+        [ServerCallback]
+        private void OnTriggerEnter(Collider other)
+        {
+            if (team == Team.None)
+            {
+                SetNewTeam(other);
+            }
+            else if (team == Team.Blue && other.tag == Consts.RED_FLAG)
+            {
+                Debug.Log("hit flag");
+            }
+            else if (team == Team.Red && other.tag == Consts.BLUE_FLAG)
+            {
+                Debug.Log("hit flag");
+            }
+        }
+
+        private void SetNewTeam(Collider other)
+        {
+            if (other.tag == Consts.RED_FLAG)
+            {
+                team = Team.Red;
+                color = Color.red;
+                Debug.Log($"player {netId} is now {team}");
+            }
+            else if (other.tag == Consts.BLUE_FLAG)
+            {
+                team = Team.Blue;
+                color = Color.blue;
+                Debug.Log($"player {netId} is now {team}");
+            }
+        }
+
+        void SetColor(Color32 _, Color32 newColor)
+        {
+            if (cachedMaterial == null) cachedMaterial = GetComponentInChildren<Renderer>().material;
+            cachedMaterial.color = newColor;
+        }
+
+        void OnDestroy()
+        {
+            Destroy(cachedMaterial);
         }
     }
 }

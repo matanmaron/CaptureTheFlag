@@ -97,7 +97,6 @@ GameObject:
   - component: {fileID: 6799120071495980942}
   - component: {fileID: -6233809968765690729}
   - component: {fileID: 114892629901890886}
-  - component: {fileID: 6261579163786439309}
   - component: {fileID: 115187108610643062}
   m_Layer: 0
   m_Name: GamePlayer
@@ -232,6 +231,10 @@ MonoBehaviour:
   characterController: {fileID: 143011667059871024}
   Bullet: {fileID: 5890560936853567077, guid: 8ac9bb547a59b1145be0c24a1649d57f, type: 3}
   BulletFirePosition: {fileID: 6674445483320076887}
+  team: 0
+  color:
+    serializedVersion: 2
+    rgba: 4278190080
   moveSpeed: 8
   turnSensitivity: 5
   maxTurnSpeed: 150
@@ -240,23 +243,6 @@ MonoBehaviour:
   turn: 6.57
   jumpSpeed: 0
   velocity: {x: 0, y: 0, z: 0}
---- !u!114 &6261579163786439309
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1480027675339556}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1e6a8bf08f02e254aa9a52ef0aaa1553, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  syncMode: 0
-  syncInterval: 0.1
-  color:
-    serializedVersion: 2
-    rgba: 4278190080
 --- !u!114 &115187108610643062
 MonoBehaviour:
   m_ObjectHideFlags: 0
