@@ -156,18 +156,29 @@ namespace CTF
         [ServerCallback]
         private void OnTriggerEnter(Collider other)
         {
+            if (!isLocalPlayer)
+            {
+                return;
+            }
             if (team == Team.None)
             {
                 SetNewTeam(other);
             }
             else if (team == Team.Blue && other.tag == Consts.RED_FLAG)
             {
+                CTFServer.Instance.PickFlag(Team.Red);
                 Debug.Log("hit flag");
             }
             else if (team == Team.Red && other.tag == Consts.BLUE_FLAG)
             {
+                CTFServer.Instance.PickFlag(Team.Blue);
                 Debug.Log("hit flag");
             }
+        }
+
+        private void ReturnFlag()
+        {
+            CTFServer.Instance.ReturnFlag(team);
         }
 
         private void SetNewTeam(Collider other)
