@@ -54,8 +54,8 @@ namespace CTF
                 redFlag.SetActive(state);
             }
         }
-
     }
+
 
     public enum Team
     {
