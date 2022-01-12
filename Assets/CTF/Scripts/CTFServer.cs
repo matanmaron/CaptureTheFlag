@@ -1,4 +1,5 @@
 using Mirror;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -56,7 +57,6 @@ namespace CTF
         }
     }
 
-
     public enum Team
     {
         None,
@@ -68,5 +68,6 @@ namespace CTF
     {
         public const string RED_FLAG = "RedFlag";
         public const string BLUE_FLAG = "BlueFlag";
+        public const int DAMAGE = 10;
     }
 }

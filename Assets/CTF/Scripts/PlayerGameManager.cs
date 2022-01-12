@@ -8,18 +8,46 @@ namespace CTF
 {
     public class PlayerGameManager : NetworkBehaviour
     {
+        [SerializeField] GameObject floatingInfo;
+        private SceneScript sceneScript;
+        [SerializeField] GameObject canvas;
+        private void Awake()
+        {
+            sceneScript = GameObject.Find("SceneReference").GetComponent<SceneReference>().sceneScript;
+        }
+
         private void Start()
         {
             if (!isLocalPlayer)
             {
-                Destroy(PlayerCamera.gameObject);
+                canvas.SetActive(false);
             }
+        }
+
+        public override void OnStartLocalPlayer()
+        {
+            base.OnStartLocalPlayer();
+            playerName = $"Player {Environment.MachineName}";
+            fpsCam = PlayerCamera.gameObject.AddComponent<Camera>();
             startPosition = transform.position;
             MouseLookStart();
+            floatingInfo.transform.localPosition = new Vector3(0, -0.3f, 0.6f);
+            floatingInfo.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+            updateHealthUIText();
+            updateKDUIText();
         }
+
         private void Update()
         {
-            if (isDead || !isLocalPlayer)
+            if (!isLocalPlayer)
+            {
+                return;
+            }
+            if (Input.GetKey(KeyCode.Escape))
+            {
+                Cursor.lockState = CursorLockMode.None;
+            }
+            if (isDead)
             {
                 return;
             }
@@ -31,7 +59,9 @@ namespace CTF
         #region MANAGER
         [HideInInspector] public Team team = Team.None;
         Vector3 startPosition;
-        bool isDead = false;
+        [SyncVar(hook = nameof(OnDeadChanged))]
+        public bool isDead = false;
+        public GameObject[] objectsToHide;
         private void OnTriggerEnter(Collider other)
         {
             if (!isLocalPlayer)
@@ -45,27 +75,67 @@ namespace CTF
             else if (team == Team.Blue && other.tag == Consts.RED_FLAG)
             {
                 CTFServer.Instance.PickFlag(Team.Red);
+                CmdSendPlayerMessage($"{playerName} has the RED flag !");
                 Debug.Log("hit flag");
             }
             else if (team == Team.Red && other.tag == Consts.BLUE_FLAG)
             {
                 CTFServer.Instance.PickFlag(Team.Blue);
+                CmdSendPlayerMessage($"{playerName} has the BLUE flag !");
                 Debug.Log("hit flag");
             }
         }
 
+        void OnDeadChanged(bool _Old, bool _New)
+        {
+            if (isDead == false) // respawn
+            {
+                foreach (var obj in objectsToHide)
+                {
+                    obj.SetActive(true);
+                }
+
+                if (isLocalPlayer)
+                {
+                    // Uses NetworkStartPosition feature, optional.
+                    this.transform.position = startPosition;
+                    Health = 50;
+                    updateHealthUIText();
+                    updateKDUIText();
+                }
+            }
+            else if (isDead == true) // death
+            {
+                // have meshes hidden, disable movement and show respawn button
+                foreach (var obj in objectsToHide)
+                {
+                    obj.SetActive(false);
+                }
+            }
+        }
+
+        [Command]
+        public void CmdPlayerStatus(bool _value)
+        {
+            // player info sent to server, then server changes sync var which updates, causing hooks to fire
+            isDead = _value;
+        }
         private void SetNewTeam(Collider other)
         {
             if (other.tag == Consts.RED_FLAG)
             {
                 team = Team.Red;
                 playerColor = Color.red;
+                CmdSetupPlayer(playerName, playerColor);
+                CmdSendPlayerMessage($"{playerName} has joind the RED team !");
                 Debug.Log($"player {netId} is now {team}");
             }
             else if (other.tag == Consts.BLUE_FLAG)
             {
                 team = Team.Blue;
                 playerColor = Color.blue;
+                CmdSetupPlayer(playerName, playerColor);
+                CmdSendPlayerMessage($"{playerName} has joind the BLUE team !");
                 Debug.Log($"player {netId} is now {team}");
             }
         }
@@ -130,25 +200,27 @@ namespace CTF
         }
         #endregion
 
-        #region COLOR
-        [SerializeField] Renderer renderer1;
-        [SerializeField] Renderer renderer2;
-
-        [SyncVar(hook = nameof(OnColorChanged))]
-        public Color playerColor = Color.white;
-        Material playerMaterialClone;
-
-        private void OnColorChanged(Color _Old, Color _New)
+        #region COLOR AND NAME
+        [SyncVar(hook = nameof(OnNameChanged))] public string playerName;
+        [SyncVar(hook = nameof(OnColorChanged))] public Color playerColor = Color.white;
+        [SerializeField] Material playerMaterialClone;
+        [SerializeField] TextMesh playerNameText;
+        [SerializeField] GameObject playerRepresent;
+        void OnNameChanged(string _Old, string _New)
         {
-            playerMaterialClone = new Material(renderer1.material);
+            playerNameText.text = playerName;
+        }
+
+        void OnColorChanged(Color _Old, Color _New)
+        {
+            playerNameText.color = _New;
+            playerMaterialClone = new Material(playerRepresent.GetComponent<Renderer>().material);
             playerMaterialClone.color = _New;
-            renderer1.material = playerMaterialClone;
-            renderer2.material = playerMaterialClone;
+            playerRepresent.GetComponent<Renderer>().material = playerMaterialClone;
         }
         #endregion
 
         #region GUN
-        [SerializeField] float damage = 10f;
         [SerializeField] Camera fpsCam;
         [SerializeField] ParticleSystem flash;
         [SerializeField] GameObject impact;
@@ -163,23 +235,27 @@ namespace CTF
             if (Input.GetButton("Fire1") && Time.time >= nextTimeToFire)
             {
                 nextTimeToFire = Time.time + 1 / fireRate;
-                Shoot();
+                Shoot(gameObject);
             }
         }
 
-        private void Shoot()
+        [Command]
+        private void Shoot(GameObject source)
         {
+            Debug.Log($"{netId}-Shoot");
             flash.Play();
             RaycastHit hit;
             if (Physics.Raycast(fpsCam.transform.position, fpsCam.transform.forward, out hit, range))
             {
                 Debug.Log(hit.transform.name);
-                hit.transform.GetComponent<PlayerGameManager>()?.TakeDamage(damage, AddKill);
+                hit.transform.gameObject.GetComponent<PlayerGameManager>()?.TakeDamage(source);
             }
             var effect = Instantiate(impact, hit.point, Quaternion.LookRotation(hit.normal));
+            NetworkServer.Spawn(effect);
             Destroy(effect, 2);
         }
-        private void AddKill()
+
+        public void AddKill()
         {
             kills++;
         }
@@ -191,30 +267,38 @@ namespace CTF
         [SerializeField] GameObject PlayerObject;
         private int kills;
         private int deaths;
-        public void TakeDamage(float amount, Action killCallback)
+
+        [ClientRpc]
+        public void TakeDamage(GameObject source)
         {
-            Health -= amount;
+            Debug.Log($"{netId}-TakeDamage");
+            Health -= Consts.DAMAGE;
             Debug.Log($"health is {Health}");
+            updateHealthUIText();
             if (Health <= 0)
             {
-                killCallback?.Invoke();
+                source.GetComponent<PlayerGameManager>()?.AddKill();
                 Die();
+                updateKDUIText();
             }
         }
 
         private void Die()
         {
+            if (!isLocalPlayer)
+            {
+                Debug.Log("not you");
+                return;
+            }
+            Debug.Log("you dead");
             deaths++;
-            PlayerObject.SetActive(false);
-            isDead = true;
-            StartCoroutine(Revive());
+            CmdPlayerStatus(true);
         }
 
-        IEnumerator Revive()
+        [ClientRpc]
+        public void RPCRevive()
         {
-            yield return new WaitForSeconds(TIME_TO_REVIVE);
             transform.position = startPosition;
-            PlayerObject.SetActive(true);
         }
         #endregion
 
@@ -229,7 +313,26 @@ namespace CTF
 
         public void updateKDUIText()
         {
-            HealthText.text = $"{kills}-{deaths}";
+            KDText.text = $"{kills}-{deaths}";
+        }
+        #endregion
+
+        #region SERVER
+        [Command]
+        public void CmdSendPlayerMessage(string msg)
+        {
+            if (sceneScript)
+                sceneScript.statusText = $"{playerName} - {msg}";
+        }
+
+        [Command]
+        public void CmdSetupPlayer(string _name, Color _col)
+        {
+            //player info sent to server, then server updates sync vars which handles it on all clients
+            playerName = _name;
+            playerColor = _col;
+
+            sceneScript.statusText = $"{playerName} joined.";
         }
         #endregion
     }
