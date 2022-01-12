@@ -90,23 +90,20 @@ namespace CTF
         {
             if (isDead == false) // respawn
             {
-                foreach (var obj in objectsToHide)
-                {
-                    obj.SetActive(true);
-                }
-
                 if (isLocalPlayer)
                 {
-                    // Uses NetworkStartPosition feature, optional.
                     this.transform.position = startPosition;
                     Health = 50;
                     updateHealthUIText();
                     updateKDUIText();
                 }
+                foreach (var obj in objectsToHide)
+                {
+                    obj.SetActive(true);
+                }
             }
             else if (isDead == true) // death
             {
-                // have meshes hidden, disable movement and show respawn button
                 foreach (var obj in objectsToHide)
                 {
                     obj.SetActive(false);
@@ -230,6 +227,7 @@ namespace CTF
         const float range = 100f;
         const float fireRate = 10f;
         const int TIME_TO_REVIVE = 3;
+
         private void GunUpdate()
         {
             if (Input.GetButton("Fire1") && Time.time >= nextTimeToFire)
@@ -242,6 +240,10 @@ namespace CTF
         [Command]
         private void Shoot(GameObject source)
         {
+            if (fpsCam == null)
+            {
+                return;
+            }
             Debug.Log($"{netId}-Shoot");
             flash.Play();
             RaycastHit hit;
@@ -271,16 +273,29 @@ namespace CTF
         [ClientRpc]
         public void TakeDamage(GameObject source)
         {
+            if (isDead)
+            {
+                return;
+            }
             Debug.Log($"{netId}-TakeDamage");
             Health -= Consts.DAMAGE;
             Debug.Log($"health is {Health}");
             updateHealthUIText();
             if (Health <= 0)
             {
+                transform.position = startPosition;
                 source.GetComponent<PlayerGameManager>()?.AddKill();
+                source.GetComponent<PlayerGameManager>()?.updateKDUIText();
                 Die();
                 updateKDUIText();
+                StartCoroutine(Revive());
             }
+        }
+
+        IEnumerator Revive()
+        {
+            yield return new WaitForSeconds(1);
+            isDead = false;
         }
 
         private void Die()
@@ -293,12 +308,6 @@ namespace CTF
             Debug.Log("you dead");
             deaths++;
             CmdPlayerStatus(true);
-        }
-
-        [ClientRpc]
-        public void RPCRevive()
-        {
-            transform.position = startPosition;
         }
         #endregion
 
