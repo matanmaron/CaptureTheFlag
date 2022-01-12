@@ -90,10 +90,10 @@ namespace CTF
         {
             if (isDead == false) // respawn
             {
+                Health = 50;
                 if (isLocalPlayer)
                 {
                     this.transform.position = startPosition;
-                    Health = 50;
                     updateHealthUIText();
                     updateKDUIText();
                 }
@@ -104,6 +104,9 @@ namespace CTF
             }
             else if (isDead == true) // death
             {
+                deaths++;
+                updateKDUIText();
+                StartCoroutine(Revive());
                 foreach (var obj in objectsToHide)
                 {
                     obj.SetActive(false);
@@ -233,12 +236,12 @@ namespace CTF
             if (Input.GetButton("Fire1") && Time.time >= nextTimeToFire)
             {
                 nextTimeToFire = Time.time + 1 / fireRate;
-                Shoot(gameObject);
+                CMDShoot(gameObject);
             }
         }
 
         [Command]
-        private void Shoot(GameObject source)
+        private void CMDShoot(GameObject source)
         {
             if (fpsCam == null)
             {
@@ -265,7 +268,7 @@ namespace CTF
         #endregion
 
         #region Target
-        [SerializeField] float Health = 50f;
+        [SerializeField][SyncVar] float Health = 50f;
         [SerializeField] GameObject PlayerObject;
         private int kills;
         private int deaths;
@@ -286,9 +289,8 @@ namespace CTF
                 transform.position = startPosition;
                 source.GetComponent<PlayerGameManager>()?.AddKill();
                 source.GetComponent<PlayerGameManager>()?.updateKDUIText();
-                Die();
-                updateKDUIText();
-                StartCoroutine(Revive());
+                CmdPlayerStatus(true);
+                
             }
         }
 
@@ -296,18 +298,6 @@ namespace CTF
         {
             yield return new WaitForSeconds(1);
             isDead = false;
-        }
-
-        private void Die()
-        {
-            if (!isLocalPlayer)
-            {
-                Debug.Log("not you");
-                return;
-            }
-            Debug.Log("you dead");
-            deaths++;
-            CmdPlayerStatus(true);
         }
         #endregion
 

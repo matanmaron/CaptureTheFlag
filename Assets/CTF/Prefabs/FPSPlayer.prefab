@@ -5809,7 +5809,6 @@ MonoBehaviour:
   playerMaterialClone: {fileID: 0}
   playerNameText: {fileID: 6461855503722777767}
   playerRepresent: {fileID: 6761948581925771819}
-  damage: 10
   fpsCam: {fileID: 0}
   flash: {fileID: 6761948581642183120}
   impact: {fileID: 8645857656097838348, guid: 4a7932823a579e04cba71318d583f4f9, type: 3}
@@ -5849,7 +5848,7 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0.1
   clientAuthority: 1
-  sendInterval: 0.05
+  sendInterval: 0.017
   syncPosition: 1
   syncRotation: 1
   syncScale: 0
