@@ -11,6 +11,8 @@ namespace CTF
         [SerializeField] GameObject floatingInfo;
         private SceneScript sceneScript;
         [SerializeField] GameObject canvas;
+        [SerializeField] GameObject UIMenu;
+        bool menuHidden = true;
         private void Awake()
         {
             sceneScript = GameObject.Find("SceneReference").GetComponent<SceneReference>().sceneScript;
@@ -43,11 +45,26 @@ namespace CTF
             {
                 return;
             }
-            if (Input.GetKey(KeyCode.Escape))
+            if (Input.GetKeyUp(KeyCode.Escape))
             {
-                Cursor.lockState = CursorLockMode.None;
+                if (menuHidden)
+                {
+                    Cursor.lockState = CursorLockMode.None;
+                    UIMenu.SetActive(true);
+                    menuHidden = false;
+                }
+                else
+                {
+                    Cursor.lockState = CursorLockMode.Locked;
+                    UIMenu.SetActive(false);
+                    menuHidden = true;
+                }
             }
             if (isDead)
+            {
+                return;
+            }
+            if (!menuHidden)
             {
                 return;
             }
@@ -236,12 +253,11 @@ namespace CTF
             if (Input.GetButton("Fire1") && Time.time >= nextTimeToFire)
             {
                 nextTimeToFire = Time.time + 1 / fireRate;
-                CMDShoot(gameObject);
+                Shoot(gameObject);
             }
         }
 
-        [Command]
-        private void CMDShoot(GameObject source)
+        private void Shoot(GameObject source)
         {
             if (fpsCam == null)
             {
@@ -255,7 +271,13 @@ namespace CTF
                 Debug.Log(hit.transform.name);
                 hit.transform.gameObject.GetComponent<PlayerGameManager>()?.TakeDamage(source);
             }
-            var effect = Instantiate(impact, hit.point, Quaternion.LookRotation(hit.normal));
+            CMDGunEffect(hit.point, hit.normal);
+        }
+
+        [Command]
+        void CMDGunEffect(Vector3 point, Vector3 normal)
+        {
+            var effect = Instantiate(impact, point, Quaternion.LookRotation(normal));
             NetworkServer.Spawn(effect);
             Destroy(effect, 2);
         }
@@ -273,7 +295,6 @@ namespace CTF
         private int kills;
         private int deaths;
 
-        [ClientRpc]
         public void TakeDamage(GameObject source)
         {
             if (isDead)
@@ -290,7 +311,6 @@ namespace CTF
                 source.GetComponent<PlayerGameManager>()?.AddKill();
                 source.GetComponent<PlayerGameManager>()?.updateKDUIText();
                 CmdPlayerStatus(true);
-                
             }
         }
 
