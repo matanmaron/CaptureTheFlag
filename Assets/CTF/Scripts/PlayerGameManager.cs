@@ -62,6 +62,14 @@ namespace CTF
                     menuHidden = true;
                 }
             }
+            if (Input.GetKeyDown(KeyCode.LeftShift))
+            {
+                isBoost = true;
+            }
+            else if (Input.GetKeyUp(KeyCode.LeftShift))
+            {
+                isBoost = false;
+            }
             if (isDead)
             {
                 return;
@@ -203,11 +211,16 @@ namespace CTF
         const float speed = 12f;
         const float groundDistance = 0.4f;
         const float gravity = -9.81f * 2;
-        const float jumpHeight = 3f;
+        const float jumpHeight = 2f;
         bool isGrounded;
-
+        bool isBoost = false;
         private void MoveUpdate()
         {
+            float boost = 1;
+            if (isBoost)
+            {
+                boost = 1.5f;
+            }
             isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
             if (isGrounded && velocity.y < 0)
             {
@@ -216,7 +229,7 @@ namespace CTF
             float x = Input.GetAxis("Horizontal");
             float z = Input.GetAxis("Vertical");
             Vector3 move = transform.right * x + transform.forward * z;
-            controller.Move(move * speed * Time.deltaTime);
+            controller.Move(move * speed * boost* Time.deltaTime);
             if (Input.GetButtonDown("Jump") && isGrounded)
             {
                 velocity.y = Mathf.Sqrt(jumpHeight * -2 * gravity);
@@ -228,7 +241,7 @@ namespace CTF
         #endregion
 
         #region MOUSE_LOOK
-        public float mouseSensitivity = 100f;
+        float mouseSensitivity = 300f;
         private float xRotation;
         [SerializeField] Transform PlayerCamera;
         private void MouseLookStart()
@@ -405,7 +418,7 @@ namespace CTF
         #region SOUND
         [SerializeField] GameObject gunSFX;
         private void PlayGunshot()
-        {
+        {   
             var a = Instantiate(gunSFX, transform);
             Destroy(a, 1);
         }
