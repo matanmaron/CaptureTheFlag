@@ -2,6 +2,7 @@ using Mirror;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 namespace CTF
@@ -27,21 +28,22 @@ namespace CTF
 
         GameObject redFlag;
         GameObject blueFlag;
-
         private void Start()
         {
             redFlag = GameObject.FindGameObjectWithTag(Consts.RED_FLAG);
             blueFlag = GameObject.FindGameObjectWithTag(Consts.BLUE_FLAG);
         }
 
-        public void PickFlag(Team flagColor)
+        [ClientRpc]
+        public void RPCPickFlag(int flagColor)
         {
-            SetFlag(flagColor, false);
+            SetFlag((Team)flagColor, false);
         }
 
-        public void ReturnFlag(Team flagColor)
+        [ClientRpc]
+        public void RPCReturnFlag(int flagColor)
         {
-            SetFlag(flagColor, true);
+            SetFlag((Team)flagColor, true);
         }
 
         private void SetFlag(Team flagColor, bool state)
