@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine;
 using System.Collections;
 using System;
+using System.Linq;
 
 namespace CTF
 {
@@ -253,11 +254,11 @@ namespace CTF
             if (Input.GetButton("Fire1") && Time.time >= nextTimeToFire)
             {
                 nextTimeToFire = Time.time + 1 / fireRate;
-                Shoot(gameObject);
+                Shoot();
             }
         }
 
-        private void Shoot(GameObject source)
+        private void Shoot()
         {
             if (fpsCam == null)
             {
@@ -269,9 +270,31 @@ namespace CTF
             if (Physics.Raycast(fpsCam.transform.position, fpsCam.transform.forward, out hit, range))
             {
                 Debug.Log(hit.transform.name);
-                hit.transform.gameObject.GetComponent<PlayerGameManager>()?.TakeDamage(source);
+                var otherPlayer = hit.transform.gameObject.GetComponent<PlayerGameManager>();
+                if(otherPlayer != null)
+                {
+                    ServerHit(this.netId, otherPlayer.netId);
+                    //TODO add score for me
+                }
+                
             }
             CMDGunEffect(hit.point, hit.normal);
+        }
+
+        [Command]
+        private void ServerHit(uint shooter, uint netIdToHit)
+        {
+            RpcClientHit(shooter, netIdToHit);
+        }
+
+        [ClientRpc]
+        private void RpcClientHit(uint shooter, uint netIdToHit)
+        {
+            var theHitedPlayer = GameObject.FindObjectsOfType<PlayerGameManager>().FirstOrDefault(a => a.netId == netIdToHit );
+            if (theHitedPlayer.isLocalPlayer)
+            {
+                theHitedPlayer.TakeDamage(gameObject);
+            }
         }
 
         [Command]
