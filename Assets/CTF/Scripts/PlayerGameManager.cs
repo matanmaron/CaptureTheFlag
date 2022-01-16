@@ -21,6 +21,7 @@ namespace CTF
 
         private void Start()
         {
+            animator = GetComponent<Animator>();
             if (!isLocalPlayer)
             {
                 canvas.SetActive(false);
@@ -90,6 +91,7 @@ namespace CTF
         public bool isDead = false;
         public GameObject[] objectsToHide;
         [SyncVar]bool hasFlag = false;
+        Animator animator;
         private void OnTriggerEnter(Collider other)
         {
             if (!isLocalPlayer)
@@ -228,6 +230,14 @@ namespace CTF
             }
             float x = Input.GetAxis("Horizontal");
             float z = Input.GetAxis("Vertical");
+            if (x!=0 || z!=0)
+            {
+                animator.SetBool("isWalking", true);
+            }
+            else
+            {
+                animator.SetBool("isWalking", false);
+            }
             Vector3 move = transform.right * x + transform.forward * z;
             controller.Move(move * speed * boost* Time.deltaTime);
             if (Input.GetButtonDown("Jump") && isGrounded)
@@ -264,7 +274,7 @@ namespace CTF
         #region COLOR AND NAME
         [SyncVar(hook = nameof(OnNameChanged))] public string playerName;
         [SyncVar(hook = nameof(OnColorChanged))] public Color playerColor = Color.white;
-        [SerializeField] Material playerMaterialClone;
+        Material playerMaterialClone;
         [SerializeField] TextMeshPro playerNameText;
         [SerializeField] GameObject playerRepresent;
         void OnNameChanged(string _Old, string _New)
@@ -275,9 +285,9 @@ namespace CTF
         void OnColorChanged(Color _Old, Color _New)
         {
             playerNameText.color = _New;
-            playerMaterialClone = new Material(playerRepresent.GetComponent<Renderer>().material);
+            playerMaterialClone = new Material(playerRepresent.transform.Find("MaleDummy_Mesh").GetComponent<SkinnedMeshRenderer>().material);
             playerMaterialClone.color = _New;
-            playerRepresent.GetComponent<Renderer>().material = playerMaterialClone;
+            playerRepresent.transform.Find("MaleDummy_Mesh").GetComponent<SkinnedMeshRenderer>().material = playerMaterialClone;
         }
         #endregion
 
@@ -307,6 +317,7 @@ namespace CTF
             {
                 return;
             }
+            animator.Play("1H-RH@Attack01");
             ServerShoot(netId);
             Debug.Log($"{netId}-Shoot");
             flash.Play();
@@ -402,6 +413,7 @@ namespace CTF
             updateHealthUIText();
             if (Health <= 0)
             {
+                animator.Play("MW@Death01_A");
                 ServerAddKill(shooter);
                 CmdPlayerStatus(true);
             }
