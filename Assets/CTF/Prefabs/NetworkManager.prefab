@@ -53,7 +53,7 @@ MonoBehaviour:
   offlineScene: Assets/CTF/Scenes/Menu.unity
   onlineScene: Assets/CTF/Scenes/Game.unity
   transport: {fileID: 798451551244147166}
-  networkAddress: localhost
+  networkAddress: 89.138.158.159
   maxConnections: 100
   authenticator: {fileID: 0}
   playerPrefab: {fileID: 6761948582291129638, guid: 01d72e877d0659844a50ead28b6f3dc0, type: 3}
@@ -75,7 +75,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b0fecffa3f624585964b0d0eb21b18e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Port: 7777
+  Port: 23897
   DualMode: 1
   NoDelay: 1
   Interval: 10

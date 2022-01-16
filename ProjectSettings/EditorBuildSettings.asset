@@ -6,12 +6,12 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/CTF/Scenes/Game.unity
-    guid: ade98401b007cb745824a8bdf2cb292f
-  - enabled: 1
     path: Assets/CTF/Scenes/Menu.unity
     guid: a6d2556ab06c9c542bfa5701c5d2dcb7
   - enabled: 1
     path: Assets/CTF/Scenes/GameList.unity
     guid: 92285eac3ce158f4b996a193ad4d90a0
+  - enabled: 1
+    path: Assets/CTF/Scenes/Game.unity
+    guid: ade98401b007cb745824a8bdf2cb292f
   m_configObjects: {}
