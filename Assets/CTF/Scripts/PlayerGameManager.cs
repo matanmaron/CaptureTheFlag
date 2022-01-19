@@ -251,7 +251,7 @@ namespace CTF
         #endregion
 
         #region MOUSE_LOOK
-        float mouseSensitivity = 300f;
+        float mouseSensitivity = 100f;
         private float xRotation;
         [SerializeField] Transform PlayerCamera;
         private void MouseLookStart()
