@@ -145,8 +145,10 @@ namespace CTF
 
         void OnDeadChanged(bool _Old, bool _New)
         {
+            Debug.Log("isDead - " +isDead);
             if (isDead == false) // respawn
             {
+                Debug.Log("1");
                 Health = 50;
                 this.transform.position = startPosition;
                 if (isLocalPlayer)
@@ -160,6 +162,7 @@ namespace CTF
             }
             else if (isDead == true) // death
             {
+                Debug.Log("2");
                 if (hasFlag)
                 {
                     Team oppTeam = team == Team.Red ? Team.Red : Team.Blue;
@@ -171,7 +174,6 @@ namespace CTF
                 {
                     obj.SetActive(false);
                 }
-                isDead = false;
             }
         }
 
@@ -298,7 +300,6 @@ namespace CTF
 
         const float range = 100f;
         const float fireRate = 10f;
-        const int TIME_TO_REVIVE = 3;
 
         private void GunUpdate()
         {
@@ -414,10 +415,17 @@ namespace CTF
                 animator.Play("MW@Death01_A");
                 ServerAddKill(shooter);
                 CmdPlayerStatus(true);
+                StartCoroutine(Review());
             }
             updateKDUIText();
         }
         #endregion
+
+        IEnumerator Review()
+        {
+            yield return new WaitForSeconds(1);
+            CmdPlayerStatus(false);
+        }
 
         #region SOUND
         [SerializeField] GameObject gunSFX;
