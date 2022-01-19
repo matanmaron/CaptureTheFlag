@@ -152,7 +152,6 @@ namespace CTF
                 if (isLocalPlayer)
                 {
                     updateHealthUIText();
-                    updateKDUIText();
                 }
                 foreach (var obj in objectsToHide)
                 {
@@ -166,14 +165,13 @@ namespace CTF
                     Team oppTeam = team == Team.Red ? Team.Red : Team.Blue;
                     ServerReturnFlag((int)oppTeam);
                 }
-                this.transform.position = startPosition;
                 deaths++;
                 updateKDUIText();
-                StartCoroutine(Revive());
                 foreach (var obj in objectsToHide)
                 {
                     obj.SetActive(false);
                 }
+                isDead = false;
             }
         }
 
@@ -215,7 +213,7 @@ namespace CTF
         const float gravity = -9.81f * 2;
         const float jumpHeight = 2f;
         bool isGrounded;
-        bool isBoost = false;
+        bool isBoost = false; 
         private void MoveUpdate()
         {
             float boost = 1;
@@ -418,12 +416,6 @@ namespace CTF
                 CmdPlayerStatus(true);
             }
             updateKDUIText();
-        }
-
-        IEnumerator Revive()
-        {
-            yield return new WaitForSeconds(1);
-            isDead = false;
         }
         #endregion
 
