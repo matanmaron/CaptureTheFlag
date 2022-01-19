@@ -26889,6 +26889,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 798451551244147166, guid: 591ef2ba07838ac4ab42220d8451f024, type: 3}
+      propertyPath: Port
+      value: 7777
+      objectReference: {fileID: 0}
     - target: {fileID: 1524229048880001642, guid: 591ef2ba07838ac4ab42220d8451f024, type: 3}
       propertyPath: m_RootOrder
       value: 5
@@ -26936,6 +26940,10 @@ PrefabInstance:
     - target: {fileID: 3392372320874383114, guid: 591ef2ba07838ac4ab42220d8451f024, type: 3}
       propertyPath: offsetY
       value: 60
+      objectReference: {fileID: 0}
+    - target: {fileID: 5970919056607178601, guid: 591ef2ba07838ac4ab42220d8451f024, type: 3}
+      propertyPath: networkAddress
+      value: 35.216.233.202
       objectReference: {fileID: 0}
     - target: {fileID: 8513016884100023560, guid: 591ef2ba07838ac4ab42220d8451f024, type: 3}
       propertyPath: m_Name
