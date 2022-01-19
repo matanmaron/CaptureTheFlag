@@ -148,7 +148,6 @@ namespace CTF
             Debug.Log("isDead - " +isDead);
             if (isDead == false) // respawn
             {
-                Debug.Log("1");
                 Health = 50;
                 this.transform.position = startPosition;
                 if (isLocalPlayer)
@@ -162,11 +161,11 @@ namespace CTF
             }
             else if (isDead == true) // death
             {
-                Debug.Log("2");
                 if (hasFlag)
                 {
-                    Team oppTeam = team == Team.Red ? Team.Red : Team.Blue;
+                    Team oppTeam = team == Team.Red ? Team.Blue : Team.Red;
                     ServerReturnFlag((int)oppTeam);
+                    hasFlag = false;
                 }
                 deaths++;
                 updateKDUIText();
